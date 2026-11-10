@@ -1,0 +1,13 @@
+{% extends "base.html" %}{% from "base.html" import sel, numf %}{% block title %}Farm profile · AgriXAI{% endblock %}{% block body %}
+<div class="hero"><h1>Farm profile</h1><p>Your defaults: used by the weather, irrigation, fertiliser, crop and chatbot tools</p></div>
+<form method="post" class="card"><input type="hidden" name="csrf" value="{{ csrf }}">
+<div class="f2">
+{{ sel('region', REGIONS, f.region, 'Agro-climatic region') }}
+{{ sel('soil', SOILS, f.soil, 'Soil type') }}
+{{ numf('area_ha','Farm area (hectares)', f.area_ha, 0.01, 10000) }}
+<div><label>Current crop</label><select name="crop"><option value="">None / planning</option>{% for k,c in CROPS.items() %}<option value="{{ k }}" {{ 'selected' if k==f.crop }}>{{ c.name }}</option>{% endfor %}</select></div>
+<div><label>Sowing date</label><input type="date" name="sow_date" value="{{ f.sow_date.strftime('%Y-%m-%d') if f.sow_date else '' }}"></div>
+<div><label>Irrigation method</label><select name="method">{% for k,l in [('flood','Flood / furrow'),('sprinkler','Sprinkler'),('drip','Drip')] %}<option value="{{ k }}" {{ 'selected' if k==f.method }}>{{ l }}</option>{% endfor %}</select></div>
+</div><div class="sp"></div><button>Save profile</button></form>
+<div class="card"><small>Region sets the climate normals the weather models start from; if you enter your own observations on the Weather page, the forecast adapts to them.</small></div>
+{% endblock %}

@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment: {POSTGRES_USER: agri, POSTGRES_PASSWORD: "${DB_PASSWORD:?set DB_PASSWORD in .env}", POSTGRES_DB: agri}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck: {test: ["CMD-SHELL","pg_isready -U agri"], interval: 5s, retries: 10}
+  web:
+    build: .
+    ports: ["8000:8000"]
+    environment:
+      DATABASE_URL: postgresql://agri:${DB_PASSWORD}@db:5432/agri
+      SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in .env}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@agrixai.local}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?set ADMIN_PASSWORD in .env}
+      OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2:3b}
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    depends_on: {db: {condition: service_healthy}}
+volumes: {pgdata: {}}

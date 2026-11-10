@@ -1,0 +1,27 @@
+{% extends "base.html" %}{% block title %}Chatbot · AgriXAI{% endblock %}{% block body %}
+<div class="hero"><h1>Farm chatbot</h1><p>Personalised crop, soil and cultivation advice from your own data, powered by your local Ollama model (no cloud AI)</p><span class="pill" id="st" style="margin-top:8px">checking…</span></div>
+<div class="card"><div class="chat" id="log">
+{% for m in msgs %}<div class="msg u">{{ m.data.q }}</div><div class="msg b" data-md>{{ m.data.a }}</div>{% endfor %}
+{% if not msgs %}<div class="msg b" data-md>Hi! Ask me about your soil, the weather, when to irrigate, which crop or fertiliser to use, or what a scan result means.</div>{% endif %}</div>
+<div class="chips">{% for q in ['How is my soil?','Will it rain this week?','Should I irrigate today?','Which crop should I grow?','What fertilizer should I use?','Explain my last scan','How to control aphids?','How to raise soil pH?','What is needed for better cultivation of my best crop?'] %}<button type="button" class="ask">{{ q }}</button>{% endfor %}</div>
+<form id="f" class="row" autocomplete="off"><input id="q" maxlength="500" placeholder="Type your question…" style="flex:1;min-width:200px" required><button id="send">Send</button></form></div>
+{% if metrics %}<div class="note">NLP: {{ metrics.n_intents }} intents, {{ metrics.n_utterances }} training utterances (intent accuracy {{ '%.0f'|format(metrics.intent_cv_acc*100) }}% cross-validated), {{ metrics.n_passages }} knowledge passages searched by TF-IDF similarity.</div>{% endif %}
+<script>
+const log=document.getElementById('log'),CS="{{ csrf }}";
+function md(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')}
+document.querySelectorAll('[data-md]').forEach(e=>e.innerHTML=md(e.textContent));
+function add(c,t,html){const d=document.createElement('div');d.className='msg '+c;html?d.innerHTML=md(t):d.textContent=t;log.appendChild(d);log.scrollTop=log.scrollHeight;return d}
+async function refreshStatus(){try{const j=await (await fetch('/api/chat/status')).json();
+ st.textContent=j.llm?('🟢 Local AI: '+j.model+' (Ollama)'):('🟡 Built-in NLP bot · '+j.detail);st.title=j.detail}catch(e){}}
+async function ask(t){add('u',t);const w=add('b','…');let txt='';send.disabled=true;
+ try{const r=await fetch('/api/chat/stream',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF':CS},body:JSON.stringify({message:t})});
+  if(!r.ok){const j=await r.json().catch(()=>({}));w.textContent=j.error||'Something went wrong.';send.disabled=false;return}
+  const rd=r.body.getReader(),dec=new TextDecoder();let buf='';
+  for(;;){const {done,value}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});
+   let i;while((i=buf.indexOf('\n'))>=0){const line=buf.slice(0,i);buf=buf.slice(i+1);if(!line.trim())continue;
+    const j=JSON.parse(line);if(j.t){txt+=j.t;w.innerHTML=md(txt);log.scrollTop=log.scrollHeight}}}
+  if(!txt)w.textContent='No answer received.'}catch(e){w.textContent=txt||'Network error, please try again.'}
+ send.disabled=false;log.scrollTop=log.scrollHeight;refreshStatus()}
+f.onsubmit=e=>{e.preventDefault();const t=q.value.trim();if(t){q.value='';ask(t)}};
+document.querySelectorAll('.ask').forEach(b=>b.onclick=()=>ask(b.textContent));log.scrollTop=log.scrollHeight;refreshStatus();
+</script>{% endblock %}

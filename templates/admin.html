@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% from "base.html" import tbl %}{% block title %}Admin · AgriXAI{% endblock %}{% block body %}
+<div class="hero"><h1>Admin panel</h1><p>Users, roles, access and model status</p></div>
+<div class="card">{{ tbl(cols,rows) }}</div>
+<div class="card"><form method="post" class="f2"><input type="hidden" name="csrf" value="{{ csrf }}">
+<input name="uid" type="number" placeholder="User id" required><select name="role"><option>farmer</option><option>agronomist</option><option>admin</option></select>
+<button name="action" value="role">Set role</button><button class="ghost" name="action" value="toggle">Enable / disable</button><button class="ghost" name="action" value="delete" onclick="return confirm('Delete this user and all their records?')">Delete</button></form></div>
+<div class="card"><h3>Model reports (from models/report.json)</h3><pre style="white-space:pre-wrap;font-size:.8rem;color:var(--mut)">{{ report|tojson(indent=2) }}</pre></div>{% endblock %}

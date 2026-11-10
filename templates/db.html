@@ -1,0 +1,4 @@
+{% extends "base.html" %}{% from "base.html" import tbl %}{% block title %}Database · AgriXAI{% endblock %}{% block body %}
+<div class="hero"><h1>Database</h1><p>Browse and export tables (password hashes and image data are never exposed)</p></div>
+<div class="card"><div class="row">{% for n in ['users','records','farms'] %}<a class="btn {{ '' if n==t else 'ghost' }}" href="?table={{ n }}">{{ n }}</a>{% endfor %}<a class="btn ghost" href="?table={{ t }}&export=1">Export {{ t }}.csv</a></div>
+<div class="note">{{ total }} rows total; showing the latest 200.</div><div class="sp"></div>{{ tbl(cols,rows) }}</div>{% endblock %}

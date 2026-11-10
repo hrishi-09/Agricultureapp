@@ -1,0 +1,24 @@
+{% extends "base.html" %}{% from "base.html" import sel, numf %}{% block title %}Soil analysis · AgriXAI{% endblock %}{% block body %}
+<div class="hero"><h1>Soil analysis</h1><p>Enter soil-test values: get nutrient ratings, a soil health index and corrective actions</p></div>
+<form method="post" class="card"><input type="hidden" name="csrf" value="{{ csrf }}">
+<div class="f2">{{ sel('soil', SOILS, form.soil, 'Soil type') }}
+{{ numf('ph','Soil pH', form.ph, 3, 10, 0.1) }}{{ numf('moisture','Moisture (% by volume)', form.moisture, 0, 70, 0.1) }}
+{{ numf('N','Available N (kg/ha)', form.N, 0, 1500) }}{{ numf('P','Available P, Olsen (kg/ha)', form.P, 0, 300) }}{{ numf('K','Available K (kg/ha)', form.K, 0, 1500) }}
+{{ numf('oc','Organic carbon (%)', form.oc, 0, 6, 0.01) }}{{ numf('ec','EC dS/m (optional)', form.ec, 0, 40, 0.01, req=False) }}</div>
+<div class="note">Values come from a soil-test lab report or soil-health card. Ratings follow the Indian Soil Health Card limits.</div><div class="sp"></div><button>Analyse soil</button></form>
+{% if res %}
+<div class="grid"><div class="card"><small>Soil health index</small><div class="big">{{ res.index }}/100</div><span class="pill {{ res.grade }}">{{ res.grade }}</span><div class="bar" style="margin-top:8px"><i style="width:{{ res.index }}%"></i></div></div>
+<div class="card"><small>pH status</small><div class="big sm">{{ res.ph_class }}</div><small>pH {{ '%.1f'|format(res.ph) }}</small></div>
+<div class="card"><small>Moisture</small><div class="big sm">{{ res.moisture.status }}</div><small>{{ res.moisture.value }}% (field capacity {{ res.moisture.fc }}%, wilting {{ res.moisture.wp }}%)</small></div>
+{% if res.ec_class %}<div class="card"><small>Salinity</small><div class="big sm">{{ res.ec_class }}</div></div>{% endif %}</div>
+<div class="grid w2"><div class="card"><h3>Nutrient ratings</h3><div class="tw"><table><tr><th>Parameter</th><th>Value</th><th>Rating</th><th>Low / High limit</th></tr>
+{% for k,n in res.nutrients.items() %}<tr><td>{{ n.label }}</td><td>{{ n.value }} {{ n.unit }}</td><td><span class="pill {{ n.rating }}">{{ n.rating }}</span></td><td>{{ n.low }} / {{ n.high }}</td></tr>{% endfor %}</table></div></div>
+<div class="card"><h3>Score breakdown</h3><canvas id="sc" height="200"></canvas></div></div>
+<div class="card"><h3>What to do</h3>{% for sev,t in res.findings %}<div class="ins {{ sev }}"><span class="pill {{ sev }}">{{ sev }}</span> {{ t }}</div>{% endfor %}
+<div class="note">{{ res.soil_name }} soil: {{ res.soil_note }}</div>
+<div class="row" style="margin-top:10px"><a class="btn" href="/fertilizer">Get fertiliser plan</a><a class="btn ghost" href="/crops">Crop recommendation</a><a class="btn ghost" href="/irrigation">Irrigation plan</a></div></div>
+<script>Chart.defaults.color='#8ea0bf';Chart.defaults.borderColor='#1f2d4a';const sv={{ res.scores.values()|list|tojson }};
+new Chart(sc,{type:'bar',data:{labels:{{ res.scores.keys()|list|tojson }},datasets:[{data:sv,backgroundColor:sv.map(v=>v>=75?'#34d399':v>=55?'#f59e0b':'#f87171')}]},options:{plugins:{legend:{display:false}},scales:{y:{min:0,max:100}}}});</script>
+{% endif %}
+{% if hist %}<div class="card"><h3>Previous reports</h3>{% for h in hist %}<div class="mut">{{ h.created.strftime('%d %b %Y %H:%M') }} · {{ h.summary }}</div>{% endfor %}</div>{% endif %}
+{% endblock %}

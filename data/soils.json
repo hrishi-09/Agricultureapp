@@ -1,0 +1,18 @@
+{
+  "_doc": "fc/wp = volumetric field capacity / wilting point (m3/m3), typical FAO-56 / USDA texture-class values. infil = approximate basic infiltration (mm/h). lime_per_ph = tonnes CaCO3/ha to raise pH by one unit. ratings follow the Indian Soil Health Card limits (available N, Olsen P, ammonium-acetate K in kg/ha; organic carbon %).",
+  "types": {
+    "sandy":    {"name": "Sandy",            "fc": 0.12, "wp": 0.05, "infil": 40, "lime_per_ph": 1.0, "notes": "Drains fast, low nutrient holding. Irrigate light and often; add organic matter."},
+    "loamy":    {"name": "Loamy",            "fc": 0.28, "wp": 0.14, "infil": 15, "lime_per_ph": 2.0, "notes": "Balanced drainage and fertility. Suits most crops."},
+    "clay":     {"name": "Clay",             "fc": 0.38, "wp": 0.24, "infil": 3,  "lime_per_ph": 3.0, "notes": "Holds water and nutrients, drains slowly. Avoid waterlogging; irrigate less often but deeper."},
+    "silty":    {"name": "Silty",            "fc": 0.33, "wp": 0.13, "infil": 8,  "lime_per_ph": 2.0, "notes": "Fertile and moisture-retentive; prone to crusting and compaction."},
+    "black":    {"name": "Black (Regur)",    "fc": 0.40, "wp": 0.26, "infil": 4,  "lime_per_ph": 3.0, "notes": "High water holding, cracks when dry. Good for cotton, soybean, pulses."},
+    "red":      {"name": "Red",              "fc": 0.24, "wp": 0.12, "infil": 20, "lime_per_ph": 1.5, "notes": "Well drained, often low in N, P and organic matter."},
+    "alluvial": {"name": "Alluvial",         "fc": 0.30, "wp": 0.15, "infil": 12, "lime_per_ph": 2.0, "notes": "Fertile river-deposited soil; good for cereals, sugarcane and vegetables."}
+  },
+  "limits": {
+    "N":  {"label": "Available nitrogen",   "unit": "kg/ha", "low": 280, "high": 560},
+    "P":  {"label": "Available phosphorus", "unit": "kg/ha", "low": 10,  "high": 25},
+    "K":  {"label": "Available potassium",  "unit": "kg/ha", "low": 110, "high": 280},
+    "oc": {"label": "Organic carbon",       "unit": "%",     "low": 0.5, "high": 0.75}
+  }
+}

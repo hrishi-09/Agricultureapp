@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% block body %}<div class="auth">
+<div class="hero"><h1>🌾 AgriXAI</h1><p>Local, explainable AI for smart farming: no external AI services</p></div>
+<div class="card"><form method="post"><input type="hidden" name="csrf" value="{{ csrf }}">
+{% if mode=='register' %}<input name="name" placeholder="Full name" maxlength="80" required><input name="email" type="email" placeholder="Email" required>
+<input name="password" type="password" placeholder="Password (min 8)" minlength="8" required><input name="confirm" type="password" placeholder="Confirm password" required><button>Create account</button>
+<p><small>Have an account? <a href="/login" style="color:var(--g)">Sign in</a></small></p>
+{% else %}<input name="email" type="email" placeholder="Email" required><input name="password" type="password" placeholder="Password" required><button>Sign in</button>
+<p><small>New here? <a href="/register" style="color:var(--g)">Register</a></small></p>{% endif %}</form></div></div>{% endblock %}

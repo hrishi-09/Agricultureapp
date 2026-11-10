@@ -1,0 +1,19 @@
+{% extends "base.html" %}{% from "base.html" import sel, numf %}{% block title %}Fertilizer · AgriXAI{% endblock %}{% block body %}
+<div class="hero"><h1>Fertilizer &amp; soil correction</h1><p>Soil-test based N-P-K doses, product quantities, split schedule and pH / salinity amendments</p></div>
+<form method="post" class="card"><input type="hidden" name="csrf" value="{{ csrf }}">
+<div class="f2">{{ sel('crop', CROPS, form.crop, 'Crop') }}{{ sel('soil', SOILS, form.soil, 'Soil type') }}
+{{ numf('ph','Soil pH', form.ph, 3, 10, 0.1) }}{{ numf('N','Available N (kg/ha)', form.N, 0, 1500) }}{{ numf('P','Available P (kg/ha)', form.P, 0, 300) }}{{ numf('K','Available K (kg/ha)', form.K, 0, 1500) }}
+{{ numf('oc','Organic carbon %', form.oc, 0, 6, 0.01) }}{{ numf('ec','EC dS/m (optional)', form.ec, 0, 40, 0.01, req=False) }}{{ numf('zn','DTPA Zn ppm (optional)', form.zn, 0, 50, 0.01, req=False) }}
+{{ numf('area_ha','Area (ha)', form.area_ha, 0.01, 10000) }}<div><label>Sowing date (optional)</label><input type="date" name="sow_date" value="{{ form.sow_date }}"></div></div>
+<div class="note">Soil values are prefilled from your latest soil report.</div><div class="sp"></div><button>Get fertiliser plan</button></form>
+{% if res %}
+<div class="grid"><div class="card"><small>Nitrogen (N)</small><div class="big">{{ res.dose.N }}</div><small>kg/ha · soil {{ res.ratings.N|lower }}</small></div>
+<div class="card"><small>Phosphorus (P₂O₅)</small><div class="big">{{ res.dose.P }}</div><small>kg/ha · soil {{ res.ratings.P|lower }}</small></div>
+<div class="card"><small>Potassium (K₂O)</small><div class="big">{{ res.dose.K }}</div><small>kg/ha · soil {{ res.ratings.K|lower }}</small></div></div>
+<div class="grid w2"><div class="card"><h3>Products for {{ res.area_ha }} ha</h3><table><tr><th>Product</th><th>kg/ha</th><th>Total kg</th><th>50 kg bags</th></tr>{% for p in res.products %}<tr><td>{{ p.name }}</td><td>{{ p.kg_ha }}</td><td>{{ p.kg_total }}</td><td>{{ p.bags_50kg }}</td></tr>{% endfor %}</table>
+{% for r in res.reasons %}<div class="note">• {{ r }}</div>{% endfor %}</div>
+<div class="card"><h3>Application schedule</h3>{% for s in res.schedule %}<div class="ins"><b>{{ s.stage }}</b>{% if s.date %} · {{ s.date }}{% else %} · day {{ s.day }} after sowing{% endif %}<br>{{ s['items']|join(' · ') }}</div>{% endfor %}</div></div>
+{% if res.corrections %}<div class="card warn"><h3>Soil correction</h3>{% for c in res.corrections %}<div class="ins medium"><b>{{ c.kind }}:</b> {{ c.text }}</div>{% endfor %}</div>{% endif %}
+<div class="card"><h3>Good practice</h3><ul class="clean">{% for t in res.tips %}<li>{{ t }}</li>{% endfor %}</ul><div class="note">Doses are general guidelines from standard recommendations. Adjust to local extension advice and your yield target.</div></div>
+{% endif %}
+{% endblock %}

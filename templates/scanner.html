@@ -1,0 +1,21 @@
+{% extends "base.html" %}{% block title %}Crop scanner · AgriXAI{% endblock %}{% block body %}
+<div class="hero"><h1>Crop image scanner</h1><p>Upload a leaf photo: OpenCV computer vision and a locally trained classifier detect diseases, pests and nutrient deficiencies</p></div>
+<form method="post" enctype="multipart/form-data" class="card"><input type="hidden" name="csrf" value="{{ csrf }}">
+<div class="dz"><input type="file" name="image" id="img" accept="image/jpeg,image/png,image/webp" capture="environment" required><div class="note">Photograph one affected leaf in daylight, filling most of the frame, on a plain background. JPG/PNG up to 6 MB.</div><img id="pv" class="scan" style="display:none;max-height:240px;margin-top:10px"></div>
+<div class="sp"></div><div class="row"><div style="min-width:220px"><label>Crop (optional)</label><select name="crop"><option value="">Not specified</option>{% for k,c in CROPS.items() %}<option value="{{ k }}">{{ c.name }}</option>{% endfor %}</select></div><button style="align-self:end">Scan image</button></div></form>
+{% if res and res.status=='no_leaf' %}<div class="card warn">⚠️ {{ res.message }}</div>{% endif %}
+{% if res and res.status=='ok' %}
+<div class="grid w2"><div class="card"><h3>Detected regions</h3>{% if res.rid %}<img class="scan" src="/scan-image/{{ res.rid }}" alt="analysed leaf"><div class="note">Green line = leaf outline · red lines = unhealthy tissue found by the model.</div>{% endif %}</div>
+<div class="card {{ 'good' if res.label=='healthy' else 'warn' if res.severity!='Severe' else 'bad' }}"><small>{{ res.kb.category|capitalize }}</small><div class="big">{{ res.name }}</div>
+<div class="row"><span class="pill {{ res.severity }}">Severity: {{ res.severity }}</span><span class="pill">{{ res.confidence|round(0)|int }}% confidence</span><span class="pill">{{ res.affected_pct|round(0)|int }}% leaf affected</span></div>
+{% if res.uncertain %}<div class="ins medium">The model is not very certain. Retake the photo or verify with an agriculture officer.</div>{% endif %}
+<p class="mut">{{ res.kb.cause }}</p><b>Other possibilities</b>{% for t in res.top[1:] %}<div class="row"><span style="width:180px">{{ t.name }}</span><div class="bar" style="flex:1"><i style="width:{{ t.prob }}%"></i></div><small>{{ t.prob }}%</small></div>{% endfor %}
+<div class="note">Evidence: {{ res.evidence|join('; ') }}.</div></div></div>
+<div class="grid w2"><div class="card"><h3>Treatment</h3><ul class="clean">{% for t in res.kb.treatment %}<li>{{ t }}</li>{% endfor %}</ul><h3>Prevention</h3><ul class="clean">{% for t in res.kb.prevention %}<li>{{ t }}</li>{% endfor %}</ul></div>
+<div class="card"><h3>Cultivation advice{% if res.crop %} · {{ res.crop }}{% endif %}</h3>{% for a in res.advice %}<div class="ins">{{ a }}</div>{% endfor %}<div class="row" style="margin-top:8px"><a class="btn ghost" href="/fertilizer">Fertiliser plan</a><a class="btn ghost" href="/chat">Ask the chatbot</a></div>
+<div class="note">Check the label and local recommendations before using any pesticide; follow waiting periods and safety gear.</div></div></div>
+{% endif %}
+{% if hist %}<div class="card"><h3>Previous scans</h3><div style="display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(130px,1fr))">{% for h in hist %}<a href="/scanner?id={{ h.id }}" style="color:inherit;text-decoration:none"><img class="scan" src="/scan-image/{{ h.id }}" style="height:100px;object-fit:cover;width:100%"><div class="note">{{ h.summary }}<br>{{ h.created.strftime('%d %b %H:%M') }}</div></a>{% endfor %}</div></div>{% endif %}
+{% if metrics %}<div class="card"><small>Model: {{ '%.0f'|format(metrics.ens_acc*100) }}% accuracy on held-out {{ metrics.source }}. Real-world photos vary much more than rendered leaves; for field-grade accuracy retrain on a photo dataset (see README: <code>python train.py --image-dir</code>).</small></div>{% endif %}
+<script>img.onchange=e=>{const f=e.target.files[0];if(f){pv.src=URL.createObjectURL(f);pv.style.display='block'}}</script>
+{% endblock %}

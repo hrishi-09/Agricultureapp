@@ -1,0 +1,7 @@
+.env
+.git
+*.db
+__pycache__
+.pytest_cache
+models
+tests

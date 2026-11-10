@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% from "base.html" import sel, numf %}{% block title %}Irrigation · AgriXAI{% endblock %}{% block body %}
+<div class="hero"><h1>Smart irrigation</h1><p>FAO-56 water balance using your soil, crop stage and the 7-day weather forecast</p></div>
+<form method="post" class="card"><input type="hidden" name="csrf" value="{{ csrf }}">
+<div class="f2">{{ sel('crop', CROPS, form.crop, 'Crop') }}{{ sel('soil', SOILS, form.soil, 'Soil type') }}{{ sel('region', REGIONS, form.region, 'Region') }}
+{{ numf('moisture','Current soil moisture (% vol)', form.moisture, 0, 70, 0.1) }}
+<div><label>Sowing date</label><input type="date" name="sow_date" value="{{ form.sow_date }}"></div>
+<div><label>Method</label><select name="method">{% for k,l in [('flood','Flood / furrow (55%)'),('sprinkler','Sprinkler (75%)'),('drip','Drip (90%)')] %}<option value="{{ k }}" {{ 'selected' if k==form.method }}>{{ l }}</option>{% endfor %}</select></div>
+{{ numf('area_ha','Area (ha)', form.area_ha, 0.01, 10000) }}</div>
+<div class="note">Soil moisture is prefilled from your latest soil report. Forecast is taken from the Weather module for your region.</div><div class="sp"></div><button>Calculate irrigation</button></form>
+{% if res %}
+<div class="card {{ 'warn' if res.status=='Irrigate now' else 'good' if 'No irrigation' in res.status else '' }}"><div class="big sm">{{ res.status }}</div><p>{{ res.advice }}</p>
+<small>Stage: {{ res.stage }} (day {{ res.das }}) · root-zone depletion {{ res.depletion_pct }}% · trigger at {{ res.raw }} of {{ res.taw }} mm available water</small></div>
+<div class="grid"><div class="card"><small>Crop water use (7 d)</small><div class="big">{{ res.week_etc }} mm</div></div><div class="card"><small>Effective rain (7 d)</small><div class="big">{{ res.week_rain }} mm</div></div>
+<div class="card"><small>Irrigation to apply (7 d)</small><div class="big">{{ res.week_gross_mm }} mm</div><small>{{ '{:,}'.format(res.week_litres) }} litres for {{ res.area_ha }} ha · {{ (res.efficiency*100)|int }}% efficiency</small></div></div>
+<div class="grid w2"><div class="card"><h3>Water balance</h3><canvas id="ic" height="220"></canvas></div>
+<div class="card"><h3>Schedule</h3>{% if res.events %}<table><tr><th>Date</th><th>Net mm</th><th>Apply mm</th><th>Litres</th></tr>{% for e in res.events %}<tr><td>{{ e.date }}</td><td>{{ e.net_mm }}</td><td>{{ e.gross_mm }}</td><td>{{ '{:,}'.format((e.gross_mm*10000*res.area_ha)|int) }}</td></tr>{% endfor %}</table>{% else %}<p class="mut">No irrigation event is needed in the next 7 days.</p>{% endif %}
+{% for n in res.notes %}<div class="ins">{{ n }}</div>{% endfor %}</div></div>
+<div class="card"><div class="tw"><table><tr><th>Date</th><th>ETo mm</th><th>Kc</th><th>ETc mm</th><th>Eff. rain mm</th><th>Depletion mm</th><th>Irrigate mm</th></tr>{% for r in res.rows %}<tr><td>{{ r.date }}</td><td>{{ r.eto }}</td><td>{{ r.kc }}</td><td>{{ r.etc }}</td><td>{{ r.rain }}</td><td>{{ r.depletion }}</td><td>{{ r.irrigate_mm }}</td></tr>{% endfor %}</table></div></div>
+<script>Chart.defaults.color='#8ea0bf';Chart.defaults.borderColor='#1f2d4a';
+new Chart(ic,{data:{labels:{{ res.rows|map(attribute='date')|list|tojson }},datasets:[{type:'line',label:'Depletion mm',data:{{ res.rows|map(attribute='depletion')|list|tojson }},borderColor:'#f59e0b',tension:.2},{type:'line',label:'Trigger',data:{{ ([res.raw]*(res.rows|length))|tojson }},borderColor:'#f87171',borderDash:[6,4],pointRadius:0},{type:'bar',label:'ETc mm',data:{{ res.rows|map(attribute='etc')|list|tojson }},backgroundColor:'#22d3ee88'},{type:'bar',label:'Rain mm',data:{{ res.rows|map(attribute='rain')|list|tojson }},backgroundColor:'#3b82f6'}]}});</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,5 @@
+{% extends "base.html" %}{% block title %}History · AgriXAI{% endblock %}{% block body %}
+<div class="hero"><h1>History</h1><p>Everything you have analysed (the chatbot uses this as your farming history)</p></div>
+<div class="card"><div class="row">{% for k in ['', 'soil','weather','irrigation','crop','fertilizer','scan'] %}<a class="btn {{ '' if (kind or '')==k else 'ghost' }}" href="/history{{ '?kind='+k if k }}">{{ k or 'all' }}</a>{% endfor %}</div></div>
+<div class="card"><div class="tw"><table><tr><th>When (UTC)</th><th>Type</th><th>Summary</th></tr>
+{% for r in rows %}<tr><td>{{ r.created.strftime('%d %b %Y %H:%M') }}</td><td><span class="pill">{{ r.kind }}</span></td><td>{% if r.kind=='scan' %}<a href="/scanner?id={{ r.id }}" style="color:var(--g)">{{ r.summary }}</a>{% else %}{{ r.summary }}{% endif %}</td></tr>{% else %}<tr><td colspan="3" class="mut">Nothing here yet.</td></tr>{% endfor %}</table></div></div>{% endblock %}

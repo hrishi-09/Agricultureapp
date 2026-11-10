@@ -1,0 +1,23 @@
+{
+  "_doc": "Training utterances for the local NLP intent classifier (TF-IDF word+char n-grams -> logistic regression). Add more phrases and re-run train.py to improve it.",
+  "intents": {
+    "greeting": ["hello", "hi", "hey there", "good morning", "good evening", "namaste", "hi assistant", "hello agri bot", "hey"],
+    "thanks": ["thanks", "thank you", "thank you so much", "that helps", "great thanks", "appreciate it", "ok thanks", "got it thanks"],
+    "goodbye": ["bye", "goodbye", "see you later", "talk to you later", "that is all", "see you"],
+    "help": ["what can you do", "help me", "how do you work", "what features do you have", "how can you help me", "what can i ask you", "show me what you can do", "guide me"],
+    "my_soil": ["how is my soil", "what does my soil report say", "is my soil healthy", "analyse my soil", "soil health of my field", "tell me about my soil test", "what is my soil ph", "is my soil fertile", "my soil report", "how are my nutrients", "check my soil status", "soil condition of my farm"],
+    "my_weather": ["what is the weather forecast", "will it rain this week", "weather prediction for my farm", "how hot will it be", "rain forecast", "what will the temperature be tomorrow", "is rain expected", "tell me the weather outlook", "will there be a heatwave", "humidity forecast", "next days weather"],
+    "irrigation": ["when should i irrigate", "how much water does my crop need", "irrigation schedule", "do i need to water today", "how often should i water", "watering plan for my field", "how many litres per hectare should i irrigate", "should i irrigate or wait for rain", "water requirement", "is my field too dry", "drip irrigation advice"],
+    "crop_recommend": ["which crop should i grow", "what should i plant", "best crop for my soil", "recommend a crop", "what crop suits my field", "suggest crops for this season", "which crop is most profitable for my land", "what to sow now", "crop suggestion", "which crop is suitable for my soil and weather"],
+    "fertilizer": ["which fertilizer should i use", "how much urea should i apply", "fertilizer dose for my crop", "what nutrients does my soil need", "npk recommendation", "how much dap do i need", "fertiliser schedule", "how to fix nitrogen deficiency", "potash requirement", "manure or chemical fertilizer", "how much fertilizer per hectare"],
+    "ph_fix": ["my soil is acidic what to do", "how to raise soil ph", "how to lower soil ph", "soil is too alkaline", "should i apply lime", "how to fix saline soil", "gypsum for sodic soil", "correct soil acidity"],
+    "scan_result": ["what did my crop scan show", "result of my leaf image", "what disease does my plant have", "explain my last scan", "what is wrong with my leaves", "my leaf photo diagnosis", "what was detected in my crop picture", "latest disease scan"],
+    "disease_treatment": ["how do i treat leaf blight", "how to control rust", "powdery mildew treatment", "what spray for leaf spot", "how to cure mosaic virus", "treatment for fungal disease", "how to get rid of leaf spots", "plant disease remedy", "my plants have yellow leaves what to do", "fungicide recommendation"],
+    "pest_control": ["how to control pests", "caterpillars are eating my leaves", "how to kill aphids", "organic pest control", "insect attack on my crop", "how to use neem oil", "whitefly control", "stem borer control", "bug problem in my field", "natural pesticide"],
+    "history": ["show my farming history", "what did i do recently", "summary of my past predictions", "my previous reports", "what have i analysed so far", "my activity summary", "review my records"],
+    "organic": ["how to do organic farming", "make compost at home", "vermicompost preparation", "natural fertilizer", "organic matter improvement", "green manure", "how to improve soil organic carbon", "jeevamrut preparation"],
+    "season_planning": ["which season is good for wheat", "when to sow rice", "sowing time of maize", "best month to plant potato", "kharif or rabi crop", "planting calendar", "when should i sow", "when is harvest time"],
+    "crop_info": ["tell me about rice cultivation", "how to grow wheat", "wheat farming guide", "how to cultivate tomato", "growing potatoes tips", "cotton cultivation practices", "maize farming advice", "sugarcane growing guide", "what water does rice need", "seed rate for wheat", "spacing for maize"],
+    "yield": ["how to increase yield", "improve crop productivity", "why is my yield low", "how to get higher production", "boost my harvest", "tips for better yield"]
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "_doc": "Approximate long-term monthly climate normals (Jan..Dec) for broad Indian agro-climatic zones: tmax/tmin in C, rh = mean relative humidity %, rain = monthly rainfall mm, rdays = rainy days, pres = mean station pressure hPa. Used as the stochastic weather generator's climatology for training the forecast models and as priors when a user has no recent observations. Replace or extend with local station data via train.py --weather-csv.",
+  "regions": {
+    "east_humid":   {"name": "Eastern plains (Kolkata, Bihar, Assam valley)", "lat": 22.6,
+      "tmax": [27, 30, 35, 36, 36, 33, 32, 32, 32, 32, 30, 27], "tmin": [13, 16, 21, 25, 26, 27, 26, 26, 26, 24, 18, 13],
+      "rh":   [70, 66, 63, 69, 73, 81, 85, 85, 84, 79, 71, 70], "rain": [13, 24, 27, 43, 140, 297, 325, 328, 252, 114, 15, 4],
+      "rdays":[1, 2, 2, 3, 7, 13, 17, 17, 13, 6, 1, 0.5], "pres": [1013, 1011, 1008, 1004, 1000, 997, 997, 998, 1000, 1005, 1010, 1013]},
+    "north_plains": {"name": "Northern plains (Delhi, Punjab, UP, Haryana)", "lat": 28.6,
+      "tmax": [21, 24, 30, 37, 41, 40, 35, 34, 34, 34, 28, 23], "tmin": [8, 11, 16, 22, 27, 29, 27, 26, 24, 18, 12, 8],
+      "rh":   [67, 60, 48, 36, 36, 52, 73, 77, 70, 56, 55, 65], "rain": [19, 20, 15, 11, 20, 70, 210, 247, 124, 15, 4, 8],
+      "rdays":[2, 2, 2, 1, 2, 5, 11, 12, 6, 1, 0.5, 1], "pres": [1016, 1013, 1008, 1002, 997, 993, 993, 996, 1000, 1008, 1013, 1017]},
+    "west_arid":    {"name": "Western semi-arid (Rajasthan, Kutch)", "lat": 26.9,
+      "tmax": [23, 26, 32, 38, 42, 40, 35, 33, 35, 36, 30, 25], "tmin": [8, 11, 16, 22, 27, 28, 26, 24, 23, 18, 12, 9],
+      "rh":   [52, 44, 36, 29, 31, 46, 67, 73, 59, 40, 42, 49], "rain": [14, 8, 8, 5, 12, 50, 195, 215, 60, 8, 3, 4],
+      "rdays":[1, 1, 1, 0.5, 1, 3, 9, 10, 4, 0.5, 0.3, 0.5], "pres": [1015, 1012, 1008, 1003, 998, 994, 994, 996, 1000, 1008, 1013, 1016]},
+    "deccan":       {"name": "Deccan plateau (Maharashtra, Telangana, N. Karnataka)", "lat": 18.5,
+      "tmax": [30, 32, 35, 37, 36, 31, 28, 28, 29, 31, 30, 29], "tmin": [11, 12, 16, 20, 22, 22, 21, 21, 20, 18, 14, 11],
+      "rh":   [50, 42, 38, 40, 50, 74, 82, 83, 78, 64, 56, 53], "rain": [3, 1, 6, 17, 41, 123, 187, 126, 134, 82, 30, 8],
+      "rdays":[0.3, 0.2, 0.5, 1, 3, 10, 15, 12, 10, 5, 2, 0.5], "pres": [945, 943, 941, 939, 938, 938, 940, 941, 941, 943, 945, 946]},
+    "south_coast":  {"name": "Southern coast (Tamil Nadu, Kerala, coastal AP)", "lat": 13.1,
+      "tmax": [29, 31, 33, 35, 37, 37, 36, 35, 34, 31, 29, 28], "tmin": [20, 21, 23, 26, 27, 27, 26, 26, 25, 24, 23, 21],
+      "rh":   [68, 68, 69, 70, 62, 58, 62, 65, 68, 76, 78, 73], "rain": [24, 7, 15, 25, 52, 53, 83, 124, 119, 267, 309, 139],
+      "rdays":[1, 0.5, 1, 2, 3, 4, 6, 8, 8, 12, 12, 7], "pres": [1012, 1011, 1009, 1007, 1004, 1002, 1002, 1003, 1005, 1008, 1010, 1012]},
+    "central":      {"name": "Central India (Madhya Pradesh, Chhattisgarh, Vidarbha)", "lat": 21.1,
+      "tmax": [28, 31, 36, 40, 43, 38, 32, 31, 32, 33, 30, 28], "tmin": [12, 14, 19, 24, 28, 27, 25, 24, 24, 20, 14, 11],
+      "rh":   [56, 46, 38, 32, 33, 59, 80, 82, 75, 60, 55, 56], "rain": [13, 15, 14, 8, 17, 183, 365, 308, 189, 51, 16, 11],
+      "rdays":[1, 1, 1, 1, 2, 9, 17, 16, 10, 3, 1, 1], "pres": [960, 958, 955, 951, 947, 945, 947, 949, 952, 957, 960, 961]},
+    "hills":        {"name": "Western Himalaya / hill regions (Himachal, Uttarakhand)", "lat": 31.1,
+      "tmax": [9, 11, 16, 21, 25, 26, 22, 21, 22, 20, 15, 11], "tmin": [2, 3, 7, 11, 15, 17, 17, 17, 14, 9, 5, 3],
+      "rh":   [67, 66, 59, 52, 54, 68, 86, 88, 80, 62, 58, 62], "rain": [63, 68, 60, 48, 70, 175, 420, 440, 190, 35, 14, 28],
+      "rdays":[5, 6, 6, 4, 5, 10, 20, 21, 12, 3, 2, 3], "pres": [790, 790, 789, 788, 787, 786, 788, 789, 790, 791, 791, 790]}
+  }
+}

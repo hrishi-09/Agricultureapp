@@ -1,0 +1,44 @@
+{% extends "base.html" %}{% block title %}Dashboard · AgriXAI{% endblock %}{% block body %}
+<div class="hero"><h1>Dashboard</h1><p>Your latest predictions, soil report, irrigation plan, crop recommendations and farming insights</p></div>
+{% set s=c.soil %}{% set fc=c.forecast %}{% set ir=c.irrigation %}{% set rc=c.crop_rec %}{% set sc=c.scan %}
+<div class="grid">
+<div class="card"><small>Soil health</small>{% if s %}<div class="big">{{ s.index }}<span class="mut" style="font-size:1rem">/100</span></div><span class="pill {{ s.grade }}">{{ s.grade }}</span> <small>pH {{ '%.1f'|format(s.ph) }} · {{ s.soil_name }}</small>{% else %}<div class="big">-</div><small><a href="/soil" style="color:var(--g)">Run a soil analysis</a></small>{% endif %}</div>
+<div class="card"><small>Rain next 7 days</small>{% if fc %}<div class="big">{{ '%.0f'|format(fc.summary.total_rain) }} mm</div><small>{{ fc.region_name }}</small>{% else %}<div class="big">-</div><small><a href="/weather" style="color:var(--g)">Get a forecast</a></small>{% endif %}</div>
+<div class="card"><small>Irrigation</small>{% if ir %}<div class="big sm">{{ ir.status }}</div><small>{{ ir.crop }} · {{ ir.week_gross_mm|round(0) }} mm this week</small>{% else %}<div class="big">-</div><small><a href="/irrigation" style="color:var(--g)">Plan irrigation</a></small>{% endif %}</div>
+<div class="card"><small>Best crop now</small>{% if rc %}<div class="big sm">{{ rc.top[0].name }}</div><small>score {{ rc.top[0].score|round(0)|int }}/100</small>{% else %}<div class="big">-</div><small><a href="/crops" style="color:var(--g)">Get recommendations</a></small>{% endif %}</div>
+<div class="card"><small>Last crop scan</small>{% if sc %}<div class="big sm">{{ sc.name }}</div><span class="pill {{ sc.severity }}">{{ sc.severity }}</span> <small>{{ sc.confidence|round(0)|int }}% confidence</small>{% else %}<div class="big">-</div><small><a href="/scanner" style="color:var(--g)">Scan a leaf</a></small>{% endif %}</div>
+</div>
+
+<div class="card"><h3>🔎 Farming insights</h3>{% for sev,t in ins %}<div class="ins {{ sev }}">{{ t }}</div>{% endfor %}</div>
+
+<div class="grid w2">
+{% if fc %}<div class="card"><h3>Weather forecast · {{ fc.region_name }}</h3><canvas id="cw" height="200"></canvas></div>{% endif %}
+{% if ir %}<div class="card"><h3>Irrigation · {{ ir.crop }}</h3><canvas id="ci" height="200"></canvas><div class="note">Root-zone depletion (mm) vs trigger. Irrigation bars show gross water to apply.</div></div>{% endif %}
+{% if rc %}<div class="card"><h3>Crop recommendation scores</h3><canvas id="cc" height="200"></canvas></div>{% endif %}
+{% if s %}<div class="card"><h3>Soil report: {{ s.soil_name }}</h3><canvas id="cs" height="200"></canvas></div>{% endif %}
+</div>
+
+<div class="card"><h3>Your activity</h3><div class="row">{% for k,v in c.history.items() %}<span class="pill">{{ k }}: {{ v }}</span>{% endfor %}</div></div>
+
+<div class="card"><h3>🧠 Local models powering this app</h3>
+<div class="tw"><table><tr><th>Module</th><th>Model</th><th>Held-out performance</th></tr>
+<tr><td>Weather</td><td>Gradient boosting (lag features, 7-day roll-forward)</td><td>{% set w=report.weather %}{% if w %}Tmax MAE {{ '%.1f'|format(w.tmax_mae) }} °C · Tmin MAE {{ '%.1f'|format(w.tmin_mae) }} °C · humidity MAE {{ '%.1f'|format(w.rh_mae) }}% · rain-day accuracy {{ '%.0f'|format(w.rain_acc*100) }}% (AUC {{ '%.2f'|format(w.rain_auc) }}){% else %}-{% endif %}</td></tr>
+<tr><td>Crop advisor</td><td>Random forest + gradient boosting + agronomic suitability rules</td><td>{% set cm=report.crop %}{% if cm %}top-1 {{ '%.0f'|format(cm.ens_acc*100) }}% · top-3 {{ '%.0f'|format(cm.top3_acc*100) }}% on overlapping crops{% else %}-{% endif %}</td></tr>
+<tr><td>Crop scanner</td><td>OpenCV features + random forest / MLP ensemble</td><td>{% set vm=report.vision %}{% if vm %}{{ '%.0f'|format(vm.ens_acc*100) }}% on {{ vm.source }}{% else %}-{% endif %}</td></tr>
+<tr><td>Chatbot</td><td>TF-IDF + logistic regression intents, TF-IDF retrieval</td><td>{% set ch=report.chatbot %}{% if ch %}intent accuracy {{ '%.0f'|format(ch.intent_cv_acc*100) }}% (4-fold CV), {{ ch.n_passages }} knowledge passages{% else %}-{% endif %}</td></tr>
+<tr><td>Soil · Irrigation · Fertilizer</td><td>Rule engines: Soil Health Card ratings, FAO-56 water balance, soil-test fertiliser logic</td><td>Deterministic, formula-based</td></tr></table></div>
+<div class="note">Training sets are generated from agronomic parameters and regional climate normals shipped in <code>data/</code>. Retrain on real datasets with <code>python train.py</code> (see README) for field-grade accuracy.</div></div>
+
+<script>
+const C={g:'#34d399',c:'#22d3ee',w:'#f59e0b',r:'#f87171',m:'#8ea0bf'};Chart.defaults.color='#8ea0bf';Chart.defaults.borderColor='#1f2d4a';
+{% if fc %}new Chart(document.getElementById('cw'),{data:{labels:{{ fc.days|map(attribute='date')|list|tojson }},datasets:[
+{type:'line',label:'Max °C',data:{{ fc.days|map(attribute='tmax')|list|tojson }},borderColor:C.r,yAxisID:'y',tension:.3},
+{type:'line',label:'Min °C',data:{{ fc.days|map(attribute='tmin')|list|tojson }},borderColor:C.c,yAxisID:'y',tension:.3},
+{type:'bar',label:'Rain mm',data:{{ fc.days|map(attribute='rain_mm')|list|tojson }},backgroundColor:'#3b82f688',yAxisID:'y1'}]},options:{scales:{y:{title:{display:true,text:'°C'}},y1:{position:'right',grid:{drawOnChartArea:false},title:{display:true,text:'mm'}}}}});{% endif %}
+{% if ir %}new Chart(document.getElementById('ci'),{data:{labels:{{ ir.rows|map(attribute='date')|list|tojson }},datasets:[
+{type:'line',label:'Depletion mm',data:{{ ir.rows|map(attribute='depletion')|list|tojson }},borderColor:C.w,tension:.2},
+{type:'line',label:'Trigger (RAW)',data:{{ ([ir.raw]*(ir.rows|length))|tojson }},borderColor:C.r,borderDash:[6,4],pointRadius:0},
+{type:'bar',label:'Irrigate mm',data:{{ ir.rows|map(attribute='irrigate_mm')|list|tojson }},backgroundColor:C.c}]}});{% endif %}
+{% if rc %}new Chart(document.getElementById('cc'),{type:'bar',data:{labels:{{ rc.top|map(attribute='name')|list|tojson }},datasets:[{label:'Score',data:{{ rc.top|map(attribute='score')|list|tojson }},backgroundColor:C.g}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{max:100}}}});{% endif %}
+{% if s %}new Chart(document.getElementById('cs'),{type:'bar',data:{labels:{{ s.scores.keys()|list|tojson }},datasets:[{label:'Score /100',data:{{ s.scores.values()|list|tojson }},backgroundColor:{{ s.scores.values()|list|tojson }}.map(v=>v>=75?C.g:v>=55?C.w:C.r)}]},options:{plugins:{legend:{display:false}},scales:{y:{max:100,min:0}}}});{% endif %}
+</script>{% endblock %}

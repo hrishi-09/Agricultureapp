@@ -1,0 +1,20 @@
+{% extends "base.html" %}{% from "base.html" import sel, numf %}{% block title %}Weather · AgriXAI{% endblock %}{% block body %}
+<div class="hero"><h1>Weather prediction</h1><p>7-day forecast of temperature, rainfall, humidity and pressure from locally trained gradient-boosting models</p></div>
+<form method="post" class="card"><input type="hidden" name="csrf" value="{{ csrf }}">
+<h3>Forecast settings</h3>
+<div class="f2">{{ sel('region', REGIONS, region, 'Region') }}
+{{ numf('tmax','Today max temp °C (optional)', '', -10, 55, req=False) }}{{ numf('tmin','Today min temp °C (optional)', '', -20, 40, req=False) }}
+{{ numf('rh','Humidity % (optional)', '', 0, 100, req=False) }}{{ numf('pres','Pressure hPa (optional)', '', 500, 1100, req=False) }}{{ numf('rain','Rain last 24 h mm (optional)', '', 0, 600, req=False) }}</div>
+<div class="note">Leave observations blank to start from the regional climate normals for today's date. Entering what you measured at your farm makes the forecast local.</div><div class="sp"></div><button>Predict weather</button></form>
+{% if data %}
+<div class="card"><h3>{{ data.region_name }} · from {{ data.start }}{% if data.used_obs %} · uses your observations{% endif %}</h3><div class="grid w2"><div><canvas id="w1" height="220"></canvas></div><div><canvas id="w2" height="220"></canvas></div></div></div>
+<div class="card"><h3>Farming outlook</h3>{% for n in data.summary.notes %}<div class="ins {{ 'medium' if ('Heat' in n or 'Frost' in n or 'Heavy' in n or 'humid' in n) else '' }}">{{ n }}</div>{% endfor %}<small>Total expected rain: {{ data.summary.total_rain }} mm</small></div>
+<div class="card"><div class="tw"><table><tr><th>Date</th><th>Max °C</th><th>Min °C</th><th>Humidity %</th><th>Pressure hPa</th><th>Rain chance</th><th>Expected rain mm</th></tr>
+{% for d in data.days %}<tr><td>{{ d.date }}</td><td>{{ d.tmax }}</td><td>{{ d.tmin }}</td><td>{{ d.rh }}</td><td>{{ d.pres }}</td><td>{{ d.rain_prob }}%</td><td>{{ d.rain_mm }}</td></tr>{% endfor %}</table></div></div>
+<script>Chart.defaults.color='#8ea0bf';Chart.defaults.borderColor='#1f2d4a';
+const L={{ data.days|map(attribute='date')|list|tojson }};
+new Chart(w1,{data:{labels:L,datasets:[{type:'line',label:'Max °C',data:{{ data.days|map(attribute='tmax')|list|tojson }},borderColor:'#f87171',tension:.3},{type:'line',label:'Min °C',data:{{ data.days|map(attribute='tmin')|list|tojson }},borderColor:'#22d3ee',tension:.3}]}});
+new Chart(w2,{data:{labels:L,datasets:[{type:'bar',label:'Rain chance %',data:{{ data.days|map(attribute='rain_prob')|list|tojson }},backgroundColor:'#3b82f688',yAxisID:'y'},{type:'line',label:'Humidity %',data:{{ data.days|map(attribute='rh')|list|tojson }},borderColor:'#34d399',yAxisID:'y',tension:.3},{type:'line',label:'Expected rain mm',data:{{ data.days|map(attribute='rain_mm')|list|tojson }},borderColor:'#f59e0b',yAxisID:'y1'}]},options:{scales:{y:{max:100},y1:{position:'right',grid:{drawOnChartArea:false}}}}});</script>
+{% endif %}
+<div class="card"><small>Model accuracy on held-out days: {% if metrics %}Tmax error ±{{ '%.1f'|format(metrics.tmax_mae) }} °C, Tmin ±{{ '%.1f'|format(metrics.tmin_mae) }} °C, humidity ±{{ '%.0f'|format(metrics.rh_mae) }}%, rain/no-rain accuracy {{ '%.0f'|format(metrics.rain_acc*100) }}% (base rate of rain days {{ '%.0f'|format(metrics.rain_base_rate*100) }}%). Accuracy falls with lead time. This is a statistical model, not a replacement for the national met service for warnings.{% endif %}</small></div>
+{% endblock %}

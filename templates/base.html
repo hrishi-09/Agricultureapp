@@ -1,0 +1,27 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}AgriXAI{% endblock %}</title>
+<link rel="stylesheet" href="/static/css/app.css">
+<script src="/static/js/chart.umd.js"></script>
+</head><body>
+{% if user %}<nav><h2>🌾 AgriXAI</h2><div class="who">{{ user.name }} · {{ user.role }}</div>
+{% set p = request.path %}
+<a href="/dashboard" class="{{ 'on' if p=='/dashboard' }}">📊 Dashboard</a>
+<a href="/farm" class="{{ 'on' if p=='/farm' }}">🏡 Farm profile</a>
+<div class="sec">Analyse</div>
+<a href="/weather" class="{{ 'on' if p=='/weather' }}">⛅ Weather</a>
+<a href="/soil" class="{{ 'on' if p=='/soil' }}">🧪 Soil analysis</a>
+<a href="/irrigation" class="{{ 'on' if p=='/irrigation' }}">💧 Smart irrigation</a>
+<a href="/crops" class="{{ 'on' if p=='/crops' }}">🌱 Crop advisor</a>
+<a href="/fertilizer" class="{{ 'on' if p=='/fertilizer' }}">🧴 Fertilizer</a>
+<a href="/scanner" class="{{ 'on' if p=='/scanner' }}">📷 Crop scanner</a>
+<div class="sec">Assistant</div>
+<a href="/chat" class="{{ 'on' if p=='/chat' }}">💬 Farm chatbot</a>
+<a href="/history" class="{{ 'on' if p=='/history' }}">🕘 History</a>
+{% if user.role=='admin' %}<div class="sec">Admin</div><a href="/admin" class="{{ 'on' if p=='/admin' }}">🛡️ Users &amp; models</a><a href="/database" class="{{ 'on' if p=='/database' }}">🗄️ Database</a>{% endif %}
+<form method="post" action="/logout"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="ghost" style="margin-top:14px">Sign out</button></form></nav>{% endif %}
+<main>{% for m in get_flashed_messages() %}<div class="flash">{{ m }}</div>{% endfor %}{% block body %}{% endblock %}</main>
+</body></html>
+{% macro tbl(cols,rows) %}<div class="tw"><table><tr>{% for c in cols %}<th>{{ c }}</th>{% endfor %}</tr>{% for r in rows %}<tr>{% for v in r %}<td>{{ v }}</td>{% endfor %}</tr>{% endfor %}</table></div>{% endmacro %}
+{% macro sel(name, opts, cur, label) %}<div><label>{{ label }}</label><select name="{{ name }}">{% for k,v in opts.items() %}<option value="{{ k }}" {{ 'selected' if k==cur }}>{{ v.name }}</option>{% endfor %}</select></div>{% endmacro %}
+{% macro numf(name, label, val, lo, hi, step='any', req=True, hint='') %}<div><label>{{ label }}</label><input type="number" name="{{ name }}" value="{{ '' if val is none else val }}" min="{{ lo }}" max="{{ hi }}" step="{{ step }}" {{ 'required' if req }} title="{{ hint }}"></div>{% endmacro %}
+{% macro csrf_in() %}<input type="hidden" name="csrf" value="{{ csrf }}">{% endmacro %}

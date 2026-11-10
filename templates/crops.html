@@ -1,0 +1,19 @@
+{% extends "base.html" %}{% from "base.html" import sel, numf %}{% block title %}Crop advisor · AgriXAI{% endblock %}{% block body %}
+<div class="hero"><h1>Crop recommendation</h1><p>Random-forest + gradient-boosting ensemble combined with agronomic suitability rules</p></div>
+<form method="post" class="card"><input type="hidden" name="csrf" value="{{ csrf }}">
+<div class="f2">{{ sel('soil', SOILS, form.soil, 'Soil type') }}{{ numf('ph','Soil pH', form.ph, 3, 10, 0.1) }}
+{{ numf('N','Nitrogen (kg/ha)', form.N, 0, 1500) }}{{ numf('P','Phosphorus (kg/ha)', form.P, 0, 300) }}{{ numf('K','Potassium (kg/ha)', form.K, 0, 1500) }}
+{{ numf('temp','Mean temperature °C', form.temp, -5, 50, 0.1) }}{{ numf('humidity','Humidity %', form.humidity, 0, 100, 0.1) }}{{ numf('rain','Season rainfall mm', form.rain, 0, 6000, 1) }}</div>
+<div class="note">Prefilled from your latest soil report and your region's climate for the coming 4 months. Change anything to explore scenarios.</div><div class="sp"></div><button>Recommend crops</button></form>
+{% if res %}
+<div class="grid w2"><div class="card"><h3>Ranking</h3><canvas id="rc" height="240"></canvas></div>
+<div class="card good"><small>Best match</small><div class="big">{{ res.top[0].name }}</div><span class="pill">{{ res.top[0].season }}</span><p>{{ res.top[0].why }}</p>
+<small>ML probability {{ res.top[0].ml_prob }}% · agronomic suitability {{ res.top[0].suitability }}%</small></div></div>
+<div class="card"><h3>Why each crop</h3><div class="tw"><table><tr><th>Crop</th><th>Score</th><th>Temp</th><th>Rain</th><th>Humidity</th><th>pH</th><th>Soil</th><th>NPK</th><th>Explanation</th></tr>
+{% for t in res.top %}<tr><td><b>{{ t.name }}</b></td><td>{{ t.score|round(0)|int }}</td><td>{{ t.factors.temperature }}</td><td>{{ t.factors.rainfall }}</td><td>{{ t.factors.humidity }}</td><td>{{ t.factors.ph }}</td><td>{{ t.factors.soil_type }}</td><td>{{ t.factors.nutrients }}</td><td>{{ t.why }}</td></tr>{% endfor %}</table></div>
+<div class="note">Factor columns are suitability percentages. Fixing the limiting factor (for example pH with lime) can move a crop up the ranking.</div></div>
+<script>Chart.defaults.color='#8ea0bf';Chart.defaults.borderColor='#1f2d4a';
+new Chart(rc,{type:'bar',data:{labels:{{ res.top|map(attribute='name')|list|tojson }},datasets:[{label:'Score',data:{{ res.top|map(attribute='score')|list|tojson }},backgroundColor:'#34d399'}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{max:100}}}});</script>
+{% endif %}
+{% if metrics %}<div class="card"><small>Model validation: top-1 accuracy {{ '%.0f'|format(metrics.ens_acc*100) }}%, top-3 {{ '%.0f'|format(metrics.top3_acc*100) }}% (many crops share overlapping climate ranges, so the ranked list with reasons is more reliable than a single label).</small></div>{% endif %}
+{% endblock %}
